@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pool Water Calculator · Jeff's Pool &amp; Spa</title>
+<style>
+  :root{ color-scheme: light;
+    --blue:#0a6ebd; --blue-dk:#075394; --blue-bg:#e8f3fb;
+    --teal:#0e9aa7; --amber:#b45309; --amber-bg:#fdf3e3;
+    --red:#b91c1c; --red-bg:#fdecec; --green:#157347; --green-bg:#e6f5ec;
+    --ink:#16202b; --muted:#5d6b78; --line:#dde3e9; --card:#ffffff; --bg:#f4f7fa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5}
+  header{background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff;padding:18px 16px}
+  header h1{margin:0;font-size:19px;font-weight:800;letter-spacing:-.01em}
+  header p{margin:4px 0 0;font-size:12.5px;opacity:.95}
+  main{max-width:640px;margin:0 auto;padding:14px 14px 40px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:13px 0;box-shadow:0 1px 2px rgba(20,40,60,.04)}
+  .card h2{margin:0 0 12px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:9px}
+  .step{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:50%;background:var(--blue-bg);color:var(--blue-dk);font-size:12px;font-weight:800}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  label.fld{display:flex;flex-direction:column;font-size:11.5px;font-weight:700;color:var(--muted);gap:4px;text-transform:uppercase;letter-spacing:.02em}
+  input,select{font:inherit;padding:11px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);width:100%}
+  input:focus,select:focus{outline:2px solid var(--blue);border-color:var(--blue)}
+  .hint{font-size:11.5px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0}
+  .lwbox{display:none;gap:10px;margin-top:10px}
+  .lwbox.show{display:grid;grid-template-columns:1fr 1fr}
+  .btn{font:inherit;font-weight:800;border:none;border-radius:11px;padding:14px;width:100%;cursor:pointer}
+  .btn-primary{background:var(--blue);color:#fff} .btn-primary:active{background:var(--blue-dk)}
+  .btn-ghost{background:#fff;border:1.5px solid var(--blue);color:var(--blue)}
+  .muted{color:var(--muted)} .note{font-size:11.5px;color:var(--muted)}
+  /* results */
+  #out{display:none}
+  .read{border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin:9px 0;background:#fff}
+  .read .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .read .nm{font-size:14px;font-weight:800}
+  .read .val{font-size:12.5px;color:var(--muted);font-weight:600}
+  .chip{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:99px;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+  .chip.ok{background:var(--green-bg);color:var(--green)}
+  .chip.lo{background:var(--blue-bg);color:var(--blue-dk)}
+  .chip.hi{background:var(--amber-bg);color:var(--amber)}
+  .chip.bad{background:var(--red-bg);color:var(--red)}
+  .read .why{font-size:12.5px;color:var(--muted);margin-top:7px}
+  .read .fix{font-size:13px;margin-top:8px;padding:9px 11px;background:var(--blue-bg);border-radius:9px}
+  .read .fix b{color:var(--blue-dk)}
+  .order{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+  .order span{font-size:10.5px;font-weight:700;color:var(--muted);background:#eef2f6;border-radius:99px;padding:3px 9px}
+  .order span.act{background:var(--amber-bg);color:var(--amber)}
+  /* products */
+  .prod{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:12px;margin:9px 0;background:#fff}
+  .prod .body{flex:1;min-width:0}
+  .prod .pt{font-size:13.5px;font-weight:800}
+  .prod .pb{font-size:12px;color:var(--muted);margin:3px 0 6px}
+  .prod .meta{font-size:12px;font-weight:700}
+  .prod .qty{color:var(--blue-dk)}
+  .prod a.add{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:800;color:#fff;background:var(--blue);border-radius:9px;padding:8px 12px;text-decoration:none}
+  .banner{border-radius:11px;padding:12px 13px;font-size:13px;margin:11px 0}
+  .banner.red{background:var(--red-bg);color:var(--red);border:1px solid #f3b4b4}
+  .banner.green{background:var(--green-bg);color:var(--green);border:1px solid #b6e0c2}
+  .banner.amber{background:var(--amber-bg);color:var(--amber);border:1px solid #f0cd8e}
+  .safety{font-size:12px;color:var(--muted);line-height:1.55}
+  .safety li{margin:4px 0}
+  .footer{font-size:11px;color:var(--muted);text-align:center;margin-top:18px;line-height:1.5}
+  .pickup{display:inline-block;font-size:11px;font-weight:800;color:var(--green);background:var(--green-bg);border-radius:99px;padding:3px 9px;margin-bottom:8px}
+  label.sym{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
+  label.sym:last-child{border-bottom:none}
+  label.sym input{width:20px;height:20px;margin-top:1px;flex:none}
+  label.sym b{font-weight:700}
+  .grp{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--blue-dk);margin:14px 0 2px}
+  .grp:first-child{margin-top:2px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pool Water Calculator</h1>
+  <p>Jeff's Pool &amp; Spa Service · enter your test results, get a balance plan &amp; what to pick up</p>
+</header>
+<main>
+  <!-- POOL -->
+  <div class="card">
+    <h2><span class="step">1</span> Your pool</h2>
+    <div class="grid">
+      <label class="fld">Volume
+        <select id="vol">
+          <option value="4000">Under 5,000 gal</option>
+          <option value="5000">~5,000 gal</option>
+          <option value="10000">~10,000 gal</option>
+          <option value="15000" selected>~15,000 gal</option>
+          <option value="20000">~20,000 gal</option>
+          <option value="25000">~25,000 gal</option>
+          <option value="30000">~30,000 gal</option>
+          <option value="40000">40,000+ gal</option>
+          <option value="dk">Don't know — estimate it</option>
+        </select>
+      </label>
+      <label class="fld">Surface
+        <select id="surface">
+          <option value="plaster">Plaster / gunite / concrete</option>
+          <option value="vinyl">Vinyl liner</option>
+          <option value="fiberglass">Fiberglass</option>
+        </select>
+      </label>
+    </div>
+    <div id="lwBox" class="lwbox">
+      <label class="fld">Length (ft)<input id="len" type="number" inputmode="decimal" placeholder="32"></label>
+      <label class="fld">Width (ft)<input id="wid" type="number" inputmode="decimal" placeholder="16"></label>
+    </div>
+    <div class="note" id="volNote" style="margin-top:8px"></div>
+    <label class="fld" style="margin-top:12px">Chlorine system
+      <select id="sys">
+        <option value="chlorine">Chlorine (tablets / liquid)</option>
+        <option value="salt">Saltwater (salt cell)</option>
+      </select>
+    </label>
+  </div>
+
+  <!-- READINGS -->
+  <div class="card">
+    <h2><span class="step">2</span> Your test results</h2>
+    <p class="note" style="margin:-4px 0 12px">Fill in what you have — leave the rest blank. A test kit or strips give you these numbers.</p>
+    <div class="grid">
+      <label class="fld">Free chlorine <span class="hint">ppm</span><input id="fc" type="number" inputmode="decimal" placeholder="e.g. 1"></label>
+      <label class="fld">Combined chlorine <span class="hint">ppm, optional</span><input id="cc" type="number" inputmode="decimal" placeholder="0"></label>
+      <label class="fld">pH<input id="ph" type="number" inputmode="decimal" placeholder="7.6"></label>
+      <label class="fld">Total alkalinity <span class="hint">ppm</span><input id="ta" type="number" inputmode="numeric" placeholder="90"></label>
+      <label class="fld">Stabilizer / CYA <span class="hint">ppm</span><input id="cya" type="number" inputmode="numeric" placeholder="40"></label>
+      <label class="fld">Calcium hardness <span class="hint">ppm</span><input id="ch" type="number" inputmode="numeric" placeholder="250"></label>
+      <label class="fld" id="saltFld" style="display:none">Salinity <span class="hint">ppm</span><input id="salt" type="number" inputmode="numeric" placeholder="3200"></label>
+      <label class="fld">Water looks
+        <select id="algae">
+          <option value="none">Clear</option>
+          <option value="green">Green (algae)</option>
+          <option value="mustard">Yellow / mustard algae</option>
+        </select>
+      </label>
+    </div>
+    <button class="btn btn-primary" id="calcBtn" style="margin-top:14px">Get my water-balance plan</button>
+  </div>
+
+  <!-- OTHER SYMPTOMS (specialty) -->
+  <div class="card">
+    <h2><span class="step">2b</span> Anything else going on? <span class="hint" style="font-weight:600">optional</span></h2>
+    <p class="note" style="margin:-4px 0 10px">Quick checks the test numbers don't catch. Tick any that match and we'll add the right specialty product.</p>
+    <div id="symptoms">
+      <label class="sym"><input type="checkbox" id="s_cloudy"><span>Water is <b>cloudy or dull</b> even when chlorine looks okay</span></label>
+      <label class="sym"><input type="checkbox" id="s_metal"><span><b>Rust, brown or greenish stains</b> — or you fill from a well</span></label>
+      <label class="sym"><input type="checkbox" id="s_scale"><span><b>White crusty scale</b> on the tile line or equipment</span></label>
+      <label class="sym"><input type="checkbox" id="s_phos"><span>Algae <b>keeps coming back</b> even when you chlorinate</span></label>
+      <label class="sym"><input type="checkbox" id="s_oil"><span><b>Oily film or scum ring</b> at the waterline</span></label>
+      <label class="sym" id="s_cellWrap" style="display:none"><input type="checkbox" id="s_cell"><span>Salt cell shows <b>low output / scale / “inspect cell”</b></span></label>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="out">
+    <div class="card">
+      <h2><span class="step">3</span> What's going on</h2>
+      <div id="escalate"></div>
+      <div class="order" id="orderRow"></div>
+      <p class="note" style="margin:2px 0 10px">Fix water balance in this order — alkalinity and pH first, chlorine last. Highlighted steps are the ones your pool needs.</p>
+      <div id="diag"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">4</span> What to pick up</h2>
+      <span class="pickup">● In-store pickup</span>
+      <p class="note" style="margin:0 0 6px">Amounts are sized to your pool. Add what you need, then swing by to pick it up.</p>
+      <div id="prods"></div>
+      <a class="btn btn-primary" id="addAll" href="#" target="_blank" rel="noopener" style="margin-top:10px;text-align:center;text-decoration:none;display:block">Add everything to cart</a>
+      <p class="note" style="margin-top:8px">Opens your JPS cart with these items. Choose <b>pickup</b> at checkout.</p>
+    </div>
+
+    <div class="card">
+      <h2><span class="step">5</span> How to do it safely</h2>
+      <ul class="safety" id="safety" style="margin:0;padding-left:18px"></ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    These are estimates to get you close — always re-test after adding chemicals. Add about two-thirds of a
+    dose first, run the pump, wait a few hours, and re-test before adding more.<br>
+    Questions? Call <b>Jeff's Pool &amp; Spa Service</b> at (912) 554-0636 and we'll help you dial it in.
+  </div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const val=id=>{const v=parseFloat($(id).value);return isNaN(v)?null:v;};
+const has=id=>$(id).value.trim()!==''&&!isNaN(parseFloat($(id).value));
+
+// ---------- store config ----------
+const CART_DOMAIN='https://eadk6h-hb.myshopify.com';
+// canonical products (verified variant IDs, JPS Shopify)
+const P={
+  liquid:{title:'Liquid Chlorine — filled 2.5-gal Jerry Jug',variant:'42614844489817',jug:'42614828400729',price:24.74,
+    blurb:'Unstabilized liquid chlorine in a refillable 2.5-gal Jerry Jug — no stabilizer or calcium added, ideal when CYA is high. Sold as a filled jug, pickup only.'},
+  calhypo:{title:'Cal-Hypo Shock (1 lb)',variant:'42614747791449',price:7.99,
+    blurb:'Fast, strong granular shock for plaster/concrete pools. Pre-dissolve in a bucket before adding.'},
+  dichlor:{title:'Regal Dy-Chlor II Shock (1 lb)',variant:'42614971990105',price:11.99,
+    blurb:'Stabilized granular shock that’s gentle on vinyl & fiberglass and dissolves fast. Adds a little stabilizer.'},
+  muriatic:{title:'Muriatic Acid — pH Decreaser (1 gal)',variant:'42614858350681',price:12.99,
+    blurb:'Lowers pH and alkalinity. Add slowly to the deep end with the pump running; never mix with chlorine.'},
+  phup:{title:'Regal pH Plus (2 lb)',variant:'42614972776537',price:7.99,
+    blurb:'Soda ash to raise pH when it’s low. Add after alkalinity is set.'},
+  alkup:{title:'Regal Alkalinity Plus (10 lb)',variant:'42614972743769',price:19.99,
+    blurb:'Sodium bicarbonate to raise total alkalinity, which buffers your pH. Set alkalinity before pH.'},
+  cya:{title:'Regal Stabilizer / CYA (4 lb)',variant:'42614972285017',price:15.99,
+    blurb:'Cyanuric acid protects chlorine from the sun. Granular dissolves slowly — sock it in the skimmer.'},
+  calcium:{title:'Regal Calcium Increaser (4 lb)',variant:'42614973104217',price:13.99,
+    blurb:'Raises calcium hardness to protect plaster and equipment from etching.'},
+  salt:{title:'Pool Salt (40 lb)',variant:'42614978412633',price:14.50,
+    blurb:'Raises salinity so your salt cell can make chlorine. Confirm with strips, not just the panel.'},
+  // ---- specialty (from the symptom questions / algae) ----
+  green:{title:'Regal Super Green Algaecide (1 qt)',variant:'42614973464665',price:35.22,
+    blurb:'Knocks down a green algae bloom. Use AFTER you shock and brush — the shock does the killing.'},
+  mustard:{title:'Yellow Treat (2 lb)',variant:'42615054696537',price:31.99,
+    blurb:'Targets stubborn yellow/mustard algae. Shock and brush first, then apply.'},
+  clarifier:{title:'Natural Clarifier (1 pt)',variant:'42614840688729',price:9.99,
+    blurb:'Clumps fine particles so the filter can clear cloudy water. Use once chlorine and pH are in range.'},
+  metal:{title:'Regal Metal Out (1 qt)',variant:'42614974185561',price:27.74,
+    blurb:'Locks up iron, copper and other metals so they can’t stain the pool — great if you fill from a well.'},
+  scale:{title:'Regal Scale Away (1 qt)',variant:'42614974087257',price:36.64,
+    blurb:'Dissolves and prevents calcium scale on tile, surfaces and equipment.'},
+  phos:{title:'Regal Super Phosphate Remover (1 qt)',variant:'42614974742617',price:44.99,
+    blurb:'Strips out phosphates — the food source that lets algae keep returning despite chlorine.'},
+  enzyme:{title:'Regal Natural Pool Enzyme (1 qt)',variant:'42614974775385',price:23.99,
+    blurb:'Digests oils, sunscreen and scum so you get a clean waterline and clearer water.'},
+  cellcleaner:{title:'Regal Salt Cell Cleaner (½ gal)',variant:'42614975004761',price:19.00,
+    blurb:'Removes scale buildup inside a salt cell so it makes chlorine at full output again.'}
+};
+function cartLink(items){ // items: [{variant, qty}]
+  const seg=items.filter(i=>i.qty>0).map(i=>i.variant+':'+i.qty).join(',');
+  return CART_DOMAIN+'/cart/'+seg;
+}
+
+// ---------- math helpers ----------
+const ceilHalf=x=>Math.max(0.5,Math.ceil(x*2-1e-9)/2);
+const ceilU=x=>Math.max(1,Math.ceil(x-1e-9));
+const round1=x=>Math.round(x*10)/10;
+function gallons(){
+  if($('vol').value==='dk'){ const l=val('len')||0,w=val('wid')||0; return Math.round(l*w*4*7.5); }
+  return parseFloat($('vol').value)||0;
+}
+function sizeDesc(g){ if(!g)return''; if(g<7000)return'Small pool'; if(g<11000)return'Smaller-than-average pool'; if(g<18000)return'Average pool'; if(g<26000)return'Larger-than-average pool'; return'Large pool'; }
+function fmtAcid(floz){ if(floz>=128){return round1(floz/128)+' gal';} if(floz>=32){return round1(floz/32)+' qt ('+Math.round(floz)+' fl oz)';} return Math.round(floz)+' fl oz (≈ '+round1(floz/8)+' cups)'; }
+
+// ---------- UI wiring ----------
+$('vol').addEventListener('change',()=>{ $('lwBox').classList.toggle('show',$('vol').value==='dk'); showVol(); });
+['len','wid'].forEach(id=>$(id).addEventListener('input',showVol));
+$('sys').addEventListener('change',()=>{ const s=$('sys').value==='salt'; $('saltFld').style.display=s?'flex':'none'; $('s_cellWrap').style.display=s?'flex':'none'; if(!s)$('s_cell').checked=false; });
+function showVol(){ const g=gallons(); const dk=$('vol').value==='dk';
+  $('volNote').innerHTML = g ? ((dk?'Estimated ':'')+'<b>~'+g.toLocaleString()+' gallons</b> · '+sizeDesc(g)) : (dk?'Enter length &amp; width to estimate.':''); }
+showVol();
+
+// ---------- core ----------
+$('calcBtn').addEventListener('click',()=>{ run(); $('out').style.display='block'; $('out').scrollIntoView({behavior:'smooth',block:'start'}); });
+
+function run(){
+  const g=gallons(), f=g/10000;
+  const surface=$('surface').value, sys=$('sys').value, look=$('algae').value;
+  const fc=val('fc'), cc=val('cc'), ph=val('ph'), ta=val('ta'), cya=val('cya'), ch=val('ch'), salt=val('salt');
+  const cyaTarget=sys==='salt'?70:40;
+  const diag=[], prods=[]; let escalate='';
+
+  // order-of-operations row
+  const order=[['TA','alk'],['pH','ph'],['Calcium','ch'],['Stabilizer','cya'],['Chlorine','cl']];
+
+  // ---- decide chlorine situation ----
+  const algae = look==='green'||look==='mustard';
+  const shock = algae || (cc!=null&&cc>0.5) || (fc!=null&&fc<1);
+  const clTarget = look==='green'?20:(shock?10:3);
+  const needsActOnOrder={};
+
+  // ===== CHLORINE =====
+  if(fc!=null){
+    if(fc>=1&&fc<=5&&!shock){
+      diag.push(read('Free chlorine',fc+' ppm','ok','In range','Your sanitizer level is good — keep it between 1 and 3 ppm.'));
+    } else if(fc>5){
+      diag.push(read('Free chlorine',fc+' ppm','hi','High','Chlorine is high. Don’t add more — let it drift down (sunlight burns it off). Wait until it’s under 5 ppm before swimming.'));
+    } else {
+      needsActOnOrder.cl=true;
+      const ppm=Math.max(0,clTarget-fc);
+      const chipTxt = fc<1 ? 'None / very low' : (shock?'Shock needed':'Low');
+      const why = fc<1 ? 'There’s little or no sanitizer in the water — unsafe to swim and algae will take hold fast.'
+                : (shock? 'Your water needs a shock dose to burn off combined chlorine or kill algae.' : 'Chlorine is low for current conditions.');
+      // choose product
+      let prod, amt, sub;
+      const useLiquid = (cya!=null&&cya>=80);
+      if(useLiquid){
+        const galCl=ppm*10.7*f/128, jugs=ceilU(galCl/2.5);
+        prod='liquid'; amt=jugs+' filled jug'+(jugs>1?'s':'')+' ('+(galCl<0.1?'<0.1':round1(galCl))+' gal)'; sub='CYA is high, so use unstabilized liquid';
+        addProd(prods,'liquid',jugs,'liquid');
+      } else if(surface==='plaster'){
+        const lb=ppm*2.0*f/16, n=ceilHalf(lb); prod='calhypo'; amt=n+' lb'; sub='cal-hypo for plaster';
+        addProd(prods,'calhypo',ceilU(n),'wt',n);
+      } else {
+        const lb=ppm*2.6*f/16, n=ceilHalf(lb); prod='dichlor'; amt=n+' lb'; sub='liner-safe dichlor';
+        addProd(prods,'dichlor',ceilU(n),'wt',n);
+      }
+      const head = shock ? ('Shock to '+clTarget+' ppm') : ('Raise to 3 ppm');
+      diag.push(read('Free chlorine',(fc)+' ppm','bad',chipTxt, why,
+        '<b>'+head+':</b> add <b>'+amt+'</b> of '+P[prod].title.split(' (')[0]+' ('+sub+'). Shock at dusk and run the pump.'));
+    }
+  }
+
+  // ===== COMBINED CHLORINE =====
+  if(cc!=null){
+    if(cc>=0.5){
+      diag.push(read('Combined chlorine',cc+' ppm','bad','High','Combined chlorine (chloramines) is what makes a pool smell “chlorine-y” and sting eyes. The fix is a breakpoint shock — included in the chlorine step above.'));
+    } else if(cc>0.2){
+      diag.push(read('Combined chlorine',cc+' ppm','hi','Slightly high','A little combined chlorine. Keep free chlorine up; shock if it climbs past 0.5.'));
+    } else {
+      diag.push(read('Combined chlorine',cc+' ppm','ok','In range','No chloramine problem.'));
+    }
+  }
+
+  // ===== pH =====
+  if(ph!=null){
+    if(ph>7.6){
+      needsActOnOrder.ph=true;
+      const floz=((ph-7.5)/0.1)*4.0*f;
+      const split = floz>0 && (ph-7.5)>0.4 ? ' Because that’s a big drop, add about half, run the pump 4–6 hours, re-test, then add the rest.' : ' Run the pump, wait 4–6 hours, then re-test.';
+      diag.push(read('pH',ph,'hi','High','High pH makes chlorine sluggish and can cloud or scale the water.',
+        '<b>Lower pH:</b> add about <b>'+fmtAcid(floz)+'</b> of muriatic acid (target 7.5). Add slowly to the deep end with the pump on.'+split));
+      addProd(prods,'muriatic',ceilU(floz/128),'unit');
+    } else if(ph<7.2){
+      needsActOnOrder.ph=true;
+      const oz=((7.5-ph)/0.2)*6*f, lb=ceilHalf(oz/16);
+      diag.push(read('pH',ph,'lo','Low','Low pH is corrosive — it can etch plaster and irritate skin and eyes.',
+        '<b>Raise pH:</b> add <b>'+lb+' lb</b> of Regal pH Plus (soda ash).'));
+      addProd(prods,'phup',ceilU(lb),'wt',lb);
+    } else {
+      diag.push(read('pH',ph,'ok','In range','pH is in the sweet spot (7.4–7.6) where chlorine works best.'));
+    }
+  }
+
+  // ===== ALKALINITY =====
+  if(ta!=null){
+    if(ta<80){
+      needsActOnOrder.alk=true;
+      const oz=((100-ta)/10)*24*f, lb=ceilHalf(oz/16);
+      diag.push(read('Total alkalinity',ta+' ppm','lo','Low','Low alkalinity lets pH bounce around. Set this first — it stabilizes everything else.',
+        '<b>Raise alkalinity:</b> add <b>'+lb+' lb</b> of Regal Alkalinity Plus (baking-soda type). Broadcast over the pool with the pump running.'));
+      addProd(prods,'alkup',ceilU(lb/10),'wt',lb);
+    } else if(ta>120){
+      needsActOnOrder.alk=true;
+      diag.push(read('Total alkalinity',ta+' ppm','hi','High','High alkalinity drives pH up and clouds water.',
+        '<b>Lower alkalinity:</b> use muriatic acid in steps — add some, run the pump, re-test, repeat. Don’t dump it all at once.'));
+      addProd(prods,'muriatic',1,'unit');
+    } else {
+      diag.push(read('Total alkalinity',ta+' ppm','ok','In range','Alkalinity is buffering your pH nicely (80–120).'));
+    }
+  }
+
+  // ===== CALCIUM HARDNESS =====
+  if(ch!=null){
+    if(ch<200){
+      needsActOnOrder.ch=true;
+      const lb=ceilHalf(((300-ch)/10)*1.25*f);
+      diag.push(read('Calcium hardness',ch+' ppm','lo','Low','Soft water is “hungry” and pulls calcium from plaster, grout and equipment, causing etching.',
+        '<b>Raise calcium:</b> add about <b>'+lb+' lb</b> of Regal Calcium Increaser.'));
+      addProd(prods,'calcium',ceilU(lb/4),'wt',lb);
+    } else if(ch>500){
+      diag.push(read('Calcium hardness',ch+' ppm','hi','High','Very hard water can scale surfaces and equipment. There’s no chemical that lowers it.',
+        '<b>Lower calcium:</b> partly drain and refill with softer water to dilute it.'));
+    } else {
+      diag.push(read('Calcium hardness',ch+' ppm','ok','In range','Calcium is in a safe range (200–400) for your surfaces.'));
+    }
+  }
+
+  // ===== CYA / STABILIZER =====
+  if(cya!=null){
+    if(cya>100){
+      diag.push(read('Stabilizer (CYA)',cya+' ppm','bad','Too high','Too much stabilizer locks up your chlorine — it stops working even at normal levels. No chemical removes it.',
+        '<b>Lower CYA:</b> drain about '+Math.min(60,Math.round((1-50/cya)*100))+'% of the water and refill to dilute it. Until then, lean on liquid chlorine over tablets.'));
+    } else if(cya<cyaTarget-5){
+      needsActOnOrder.cya=true;
+      const lb=ceilHalf((cyaTarget-cya)*1.3*f/16);
+      diag.push(read('Stabilizer (CYA)',cya+' ppm','lo','Low','Without stabilizer the sun burns your chlorine off in hours.',
+        '<b>Raise stabilizer:</b> add <b>'+lb+' lb</b> of Regal Stabilizer (target '+cyaTarget+' ppm for your system). Sock it in the skimmer; it dissolves slowly.'));
+      addProd(prods,'cya',ceilU(lb/4),'wt',lb);
+    } else {
+      diag.push(read('Stabilizer (CYA)',cya+' ppm','ok','In range','Stabilizer is protecting your chlorine well.'));
+    }
+  }
+
+  // ===== SALT =====
+  if(sys==='salt'&&salt!=null){
+    if(salt<3000){
+      needsActOnOrder.cl=true;
+      const realBags=ceilHalf((3200-salt)*f/480);
+      diag.push(read('Salinity',salt+' ppm','lo','Low','Your salt cell can’t make chlorine without enough salt in the water.',
+        '<b>Add salt:</b> about <b>'+realBags+' × 40-lb bag'+(realBags>1?'s':'')+'</b> to reach ~3,200 ppm. Add with the pump running; let it dissolve before testing.'));
+      addProd(prods,'salt',ceilU(realBags),'wt',realBags);
+    } else if(salt>3800){
+      diag.push(read('Salinity',salt+' ppm','hi','High','Salt is a bit high — usually harmless, but very high can trip a cell error. Dilute with fresh water if your cell complains.'));
+    } else {
+      diag.push(read('Salinity',salt+' ppm','ok','In range','Salt is in range for your cell (about 3,000–3,500 ppm).'));
+    }
+  }
+
+  // ===== ALGAE (tied to chlorine shock) =====
+  if(look==='green'){
+    addProd(prods,'green',1,'unit');
+    escalate='<div class="banner red"><b>Green algae:</b> shock hard (to 20 ppm), brush the walls and floor, run the pump 24/7, then add the green algaecide. If the bottom is coated, vacuum it to waste rather than stirring it up.</div>';
+  } else if(look==='mustard'){
+    addProd(prods,'mustard',1,'unit');
+    escalate='<div class="banner amber"><b>Yellow/mustard algae:</b> shock, brush thoroughly (it clings), then apply Yellow Treat. Rinse anything that touched the water — it spreads easily.</div>';
+  }
+
+  // ===== SPECIALTY (from the symptom questions) =====
+  if($('s_cloudy').checked) addProd(prods,'clarifier',1,'spec');
+  if($('s_metal').checked)  addProd(prods,'metal',1,'spec');
+  if($('s_scale').checked)  addProd(prods,'scale',1,'spec');
+  if($('s_phos').checked)   addProd(prods,'phos',1,'spec');
+  if($('s_oil').checked)    addProd(prods,'enzyme',1,'spec');
+  if(sys==='salt'&&$('s_cell').checked) addProd(prods,'cellcleaner',1,'spec');
+
+  // ---- render order row ----
+  $('orderRow').innerHTML=order.map(o=>'<span class="'+(needsActOnOrder[o[1]]?'act':'')+'">'+o[0]+'</span>').join('');
+  $('escalate').innerHTML=escalate;
+
+  if(!diag.length){
+    $('diag').innerHTML='<div class="banner amber">Enter at least one reading above to get a plan.</div>';
+  } else {
+    $('diag').innerHTML=diag.join('');
+  }
+
+  // ---- render products ----
+  renderProds(prods);
+
+  // ---- safety ----
+  $('safety').innerHTML=[
+    'Add chemicals <b>to water</b>, never water to chemicals — and never mix two products together.',
+    'Add only one thing at a time. Run the pump, wait a few hours, and re-test before the next addition.',
+    'Add acid slowly to the deep end with the pump running.',
+    'Shock at dusk so the sun doesn’t burn it off, and keep everyone out until chlorine is back to 1–3 ppm and the water is clear.',
+    'These amounts are estimates — start with about two-thirds, then re-test and top up.'
+  ].map(t=>'<li>'+t+'</li>').join('');
+}
+
+// dedupe + accumulate product quantities
+function addProd(list,key,qty,kind,detail){
+  const ex=list.find(p=>p.key===key);
+  if(ex){ ex.qty=Math.max(ex.qty,qty); }
+  else list.push({key,qty,kind,detail});
+}
+function prodCard(p){
+  const d=P[p.key];
+  const link=cartLink([{variant:d.variant,qty:p.qty}].concat(p.key==='liquid'?[{variant:d.jug,qty:p.qty}]:[]));
+  const qtyTxt=p.qty+'× unit'+(p.qty>1?'s':'');
+  return '<div class="prod"><div class="body"><div class="pt">'+d.title+'</div>'+
+    '<div class="pb">'+d.blurb+'</div>'+
+    '<div class="meta"><span class="qty">Suggested: '+qtyTxt+'</span> · $'+d.price.toFixed(2)+' each</div>'+
+    '<a class="add" href="'+link+'" target="_blank" rel="noopener">Add to cart</a>'+
+    '</div></div>';
+}
+function renderProds(list){
+  const box=$('prods');
+  if(!list.length){ box.innerHTML='<div class="banner green">Your water looks balanced — nothing to add right now. Keep up your routine and re-test in a few days.</div>'; $('addAll').style.display='none'; return; }
+  const core=list.filter(p=>p.kind!=='spec'), spec=list.filter(p=>p.kind==='spec');
+  let html='';
+  if(core.length){ html+='<div class="grp">Balance chemicals</div>'+core.map(prodCard).join(''); }
+  if(spec.length){ html+='<div class="grp">Specialty add-ons</div>'+spec.map(prodCard).join(''); }
+  box.innerHTML=html;
+  // add all
+  const items=[];
+  list.forEach(p=>{ const d=P[p.key]; items.push({variant:d.variant,qty:p.qty}); if(p.key==='liquid') items.push({variant:d.jug,qty:p.qty}); });
+  $('addAll').href=cartLink(items); $('addAll').style.display='block';
+}
+
+function read(name,valTxt,chip,chipTxt,why,fix){
+  return '<div class="read"><div class="top"><span class="nm">'+name+'</span>'+
+    '<span style="display:flex;gap:8px;align-items:center"><span class="val">'+valTxt+'</span>'+
+    '<span class="chip '+chip+'">'+chipTxt+'</span></span></div>'+
+    '<div class="why">'+why+'</div>'+(fix?'<div class="fix">'+fix+'</div>':'')+'</div>';
+}
+
+// ---------- iframe auto-resize for Squarespace ----------
+function postH(){ try{ parent.postMessage({jpsPoolToolHeight:document.body.scrollHeight},'*'); }catch(e){} }
+try{ if(typeof ResizeObserver!=='undefined'){ new ResizeObserver(postH).observe(document.body); } }catch(e){}
+window.addEventListener('load',postH);
+window.addEventListener('resize',postH);
+</script>
+</body>
+</html>
