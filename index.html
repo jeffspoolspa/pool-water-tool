@@ -71,6 +71,25 @@
   label.sym b{font-weight:700}
   .grp{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--blue-dk);margin:14px 0 2px}
   .grp:first-child{margin-top:2px}
+  .toolbar{display:flex;justify-content:flex-end;margin:2px 0 6px}
+  #printBtn{width:auto;padding:10px 16px}
+  #printHead{display:none}
+  @media print{
+    @page{margin:14mm}
+    body{background:#fff;color:#000;font-size:12px}
+    header,.no-print,.toolbar,.prod a.add,#addAll{display:none !important}
+    main{max-width:none;padding:0}
+    .card{border:none;box-shadow:none;padding:0;margin:0 0 12px;break-inside:avoid}
+    .card h2{font-size:14px}
+    .read,.prod{break-inside:avoid;border-color:#ccc}
+    .fix{background:#eef4fb !important}
+    #printHead{display:block;border-bottom:2px solid var(--blue);padding-bottom:8px;margin-bottom:14px}
+    #printHead .ph-brand{font-size:15px;font-weight:800;color:var(--blue)}
+    #printHead .ph-title{font-size:21px;font-weight:800;line-height:1.1;margin-top:2px}
+    #printHead .ph-meta,#printHead .ph-read{font-size:12px;color:#333;margin-top:4px}
+    .footer{font-size:10px;margin-top:12px}
+    a{text-decoration:none;color:#000}
+  }
 </style>
 </head>
 <body>
@@ -80,7 +99,7 @@
 </header>
 <main>
   <!-- POOL -->
-  <div class="card">
+  <div class="card no-print">
     <h2><span class="step">1</span> Your pool</h2>
     <div class="grid">
       <label class="fld">Volume
@@ -118,7 +137,7 @@
   </div>
 
   <!-- READINGS -->
-  <div class="card">
+  <div class="card no-print">
     <h2><span class="step">2</span> Your test results</h2>
     <p class="note" style="margin:-4px 0 12px">Fill in what you have — leave the rest blank. A test kit or strips give you these numbers.</p>
     <div class="grid">
@@ -141,7 +160,7 @@
   </div>
 
   <!-- OTHER SYMPTOMS (specialty) -->
-  <div class="card">
+  <div class="card no-print">
     <h2><span class="step">2b</span> Anything else going on? <span class="hint" style="font-weight:600">optional</span></h2>
     <p class="note" style="margin:-4px 0 10px">Quick checks the test numbers don't catch. Tick any that match and we'll add the right specialty product.</p>
     <div id="symptoms">
@@ -156,6 +175,8 @@
 
   <!-- RESULTS -->
   <div id="out">
+    <div id="printHead"></div>
+    <div class="toolbar no-print"><button class="btn btn-ghost" id="printBtn">🖨&nbsp;&nbsp;Print / Save as PDF</button></div>
     <div class="card">
       <h2><span class="step">3</span> What's going on</h2>
       <div id="escalate"></div>
@@ -257,6 +278,7 @@ showVol();
 
 // ---------- core ----------
 $('calcBtn').addEventListener('click',()=>{ run(); $('out').style.display='block'; $('out').scrollIntoView({behavior:'smooth',block:'start'}); });
+$('printBtn').addEventListener('click',()=>window.print());
 
 function run(){
   const g=gallons(), f=g/10000;
@@ -440,6 +462,17 @@ function run(){
     'Shock at dusk so the sun doesn’t burn it off, and keep everyone out until chlorine is back to 1–3 ppm and the water is clear.',
     'These amounts are estimates — start with about two-thirds, then re-test and top up.'
   ].map(t=>'<li>'+t+'</li>').join('');
+
+  // ---- print header (shown only when printing / saving to PDF) ----
+  const _today=new Date().toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  const _rd=[];
+  if(fc!=null)_rd.push('Free Cl '+fc); if(cc!=null)_rd.push('Comb Cl '+cc); if(ph!=null)_rd.push('pH '+ph);
+  if(ta!=null)_rd.push('Alkalinity '+ta); if(cya!=null)_rd.push('CYA '+cya); if(ch!=null)_rd.push('Calcium '+ch);
+  if(sys==='salt'&&salt!=null)_rd.push('Salt '+salt);
+  $('printHead').innerHTML='<div class="ph-brand">JEFF’S POOL &amp; SPA SERVICE</div>'+
+    '<div class="ph-title">Your Pool Water Plan</div>'+
+    '<div class="ph-meta">'+_today+(g?' · '+g.toLocaleString()+' gallons · '+sizeDesc(g):'')+' · '+(sys==='salt'?'Saltwater':'Chlorine')+' pool</div>'+
+    (_rd.length?'<div class="ph-read"><b>Your readings:</b> '+_rd.join('  ·  ')+'</div>':'');
 }
 
 // dedupe + accumulate product quantities
